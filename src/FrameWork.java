@@ -4,7 +4,6 @@ import javax.print.attribute.standard.Media;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -27,6 +26,8 @@ public class FrameWork extends JFrame
     String currentString;
     int curi = 0;
     int curt = 0;
+    boolean nextS = false;
+    boolean start = true;
 
     JFrame frame = new JFrame("MyGame by andrew_korneev");
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -119,7 +120,6 @@ public class FrameWork extends JFrame
 
         JButton next = new JButton();
         next.setIcon(new ImageIcon(getClass().getClassLoader().getResource("next.jpg")));
-        next.setBackground(Color.green);
         next.setSize(100,100);
         next.setLocation((int) width - 102,(int) (height - 170));
         next.setToolTipText("next question");
@@ -127,6 +127,7 @@ public class FrameWork extends JFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                start = true;
                 if (curi < question.length)
                 {
                     curi++;
@@ -143,16 +144,18 @@ public class FrameWork extends JFrame
 
         JButton previous = new JButton();
         previous.setIcon(new ImageIcon(getClass().getClassLoader().getResource("previous.jpg")));
-        previous.setBackground(Color.green);
         previous.setSize(100, 100);
         previous.setLocation(0,(int) (height - 170));
         previous.setToolTipText("previous question");
         previous.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (curi > 0) {
+                start = true;
+                if (curi > 0)
+                {
                     curi--;
-                    if ((curi + 1) % 5 == 0 && curi != 0) {
+                    if ((curi + 1) % 5 == 0 && curi != 0)
+                    {
                         curt--;
                         Theme.setText(theme[curt]);
                     }
@@ -196,7 +199,7 @@ public class FrameWork extends JFrame
 
             minus.setSize(30,30);
             minus.setLocation(i * (int) (width / 6) + 140,(int)(height - 260));
-            minus.setIcon(new ImageIcon(getClass().getClassLoader().getResource("minus.jpg")));
+            minus.setIcon(new ImageIcon(getClass().getClassLoader().getResource("minus.png")));
             minus.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -208,7 +211,7 @@ public class FrameWork extends JFrame
 
             zero.setSize(30,30);
             zero.setLocation(i * (int) (width / 6) + 90,(int)(height - 260));
-            zero.setIcon(new ImageIcon(getClass().getClassLoader().getResource("zero.jpg")));
+            zero.setIcon(new ImageIcon(getClass().getClassLoader().getResource("zero.png")));
             zero.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -224,40 +227,130 @@ public class FrameWork extends JFrame
         }
 
         try {
+
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("Royal Crown Revue - Hey Pachuco.wav"));
             Clip clip = AudioSystem.getClip();
             clip.open(audioIn);
             clip.start();
 
+            AudioInputStream audioIn1 = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("Chuck Berry - You never can tell.wav"));
+            Clip clip1 = AudioSystem.getClip();
+            clip1.open(audioIn1);
+
             JButton play = new JButton();
-            play.setLocation((int)120, (int) (height - 170));
+            play.setLocation((int) width - 320,(int) (height - 170));
             play.setSize(100, 100);
-            play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("play.jpg")));
+            play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("pause.png")));
             play.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    if (clip.isOpen()) {
-                        if (clip.isActive())
+                    if(!nextS)
+                    {
+                        if (clip.isRunning())
+                        {
+                            play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("play.png")));
                             clip.stop();
-                        else clip.start();
+                        }
+                        else
+                        {
+                            play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("pause.png")));
+                            clip.start();
+                        }
+                    }
+                    if(nextS)
+                    {
+                        if (clip1.isRunning())
+                        {
+                            play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("play.png")));
+                            clip1.stop();
+                        }
+                        else
+                        {
+                            play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("pause.png")));
+                            clip1.start();
+                        }
+                    }
+                }
+            });
+
+            JButton nextSong = new JButton();
+            nextSong.setLocation((int) width - 210,(int) (height - 170));
+            nextSong.setSize(100, 100);
+            nextSong.setToolTipText("Play next song");
+            nextSong.setIcon(new ImageIcon(getClass().getClassLoader().getResource("nextSong.png")));
+            nextSong.addActionListener(new ActionListener()
+            {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!nextS)
+                    {
+                        nextS = true;
+                        clip.stop();
+                        clip1.setFramePosition(0);
+                        clip1.start();
+                        play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("pause.png")));
+                    }
+                    else if(nextS)
+                    {
+                        nextS = false;
+                        clip1.stop();
+                        clip.setFramePosition(0);
+                        clip.start();
+                        play.setIcon(new ImageIcon(getClass().getClassLoader().getResource("pause.png")));
                     }
                 }
             });
 
             panel.add(play);
+            panel.add(nextSong);
 
             }
         catch (Exception lu){}
 
 
+        JButton timer = new JButton();
+        timer.setLocation(110,(int) (height - 170));
+        timer.setSize(100, 100);
+        timer.setToolTipText("Start timer");
+        timer.setIcon(new ImageIcon(getClass().getClassLoader().getResource("timer.jpg")));
+        timer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                if(start)
+                {
+                    start = false;
+                    try
+                    {
+                        Thread.sleep(7000);
+                    }
+                    catch (InterruptedException inter) {}
+
+                    try {
+                        AudioInputStream audioIn2 = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("notification.wav"));
+                        Clip notification = AudioSystem.getClip();
+                        notification.open(audioIn2);
+                        notification.start();
+                        audioIn2.close();
+                    }
+                    catch (Exception note) {}
+                }
+            }
+        });
+
         JButton getAnswer = new JButton();
         getAnswer.setSize(100,100);
         getAnswer.setLocation(230,(int) (height - 170));
-        getAnswer.setIcon(new ImageIcon(getClass().getClassLoader().getResource("answer.jpg")));
+        getAnswer.setIcon(new ImageIcon(getClass().getClassLoader().getResource("answer.png")));
         getAnswer.setToolTipText("Get the answer to it");
         getAnswer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(Answer.getText().length()>0)
+                {
+                    Answer.setText("");
+                }
+                else
                 Answer.setText(answer[curi]);
             }
         });
@@ -269,13 +362,14 @@ public class FrameWork extends JFrame
         Answer.setFont(new Font("Dialog", Font.BOLD + Font.ITALIC,40));
 
 
+
         panel.add(getAnswer);
         panel.add(Answer);
         panel.add(Theme);
         panel.add(Question);
         panel.add(next);
         panel.add(previous);
-
+        panel.add(timer);
 
         validate();
     }
